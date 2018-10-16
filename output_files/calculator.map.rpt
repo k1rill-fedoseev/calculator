@@ -1,5 +1,5 @@
 Analysis & Synthesis report for calculator
-Tue Oct 16 16:17:15 2018
+Tue Oct 16 18:27:08 2018
 Quartus Prime Version 18.0.0 Build 614 04/24/2018 SJ Lite Edition
 
 
@@ -36,7 +36,7 @@ refer to the applicable agreement for further details.
 +----------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                     ;
 +------------------------------------+---------------------------------------------+
-; Analysis & Synthesis Status        ; Failed - Tue Oct 16 16:17:15 2018           ;
+; Analysis & Synthesis Status        ; Failed - Tue Oct 16 18:27:08 2018           ;
 ; Quartus Prime Version              ; 18.0.0 Build 614 04/24/2018 SJ Lite Edition ;
 ; Revision Name                      ; calculator                                  ;
 ; Top-level Entity Name              ; calculator                                  ;
@@ -161,20 +161,19 @@ refer to the applicable agreement for further details.
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 18.0.0 Build 614 04/24/2018 SJ Lite Edition
-    Info: Processing started: Tue Oct 16 16:17:05 2018
+    Info: Processing started: Tue Oct 16 18:26:59 2018
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off calculator -c calculator
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (20030): Parallel compilation is enabled and will use 4 of the 4 processors detected
-Error (10170): Verilog HDL syntax error at numpad.v(2) near text: ";";  expecting ")". Check for and fix any syntax errors that appear immediately before or at the specified keyword. The Intel FPGA Knowledge Database contains many articles with specific details on how to resolve this error. Visit the Knowledge Database at https://www.altera.com/support/support-resources/knowledge-base/search.html and search for this specific error message number. File: D:/calculator/numpad.v Line: 2
-Error (10112): Ignored design unit "numpad" at numpad.v(1) due to previous errors File: D:/calculator/numpad.v Line: 1
-Info (12021): Found 0 design units, including 0 entities, in source file numpad.v
-Error (10170): Verilog HDL syntax error at display.v(2) near text: ";";  expecting ")". Check for and fix any syntax errors that appear immediately before or at the specified keyword. The Intel FPGA Knowledge Database contains many articles with specific details on how to resolve this error. Visit the Knowledge Database at https://www.altera.com/support/support-resources/knowledge-base/search.html and search for this specific error message number. File: D:/calculator/display.v Line: 2
-Error (10112): Ignored design unit "display" at display.v(1) due to previous errors File: D:/calculator/display.v Line: 1
-Info (12021): Found 0 design units, including 0 entities, in source file display.v
-Error: Quartus Prime Analysis & Synthesis was unsuccessful. 4 errors, 1 warning
-    Error: Peak virtual memory: 4728 megabytes
-    Error: Processing ended: Tue Oct 16 16:17:15 2018
-    Error: Elapsed time: 00:00:10
-    Error: Total CPU time (on all processors): 00:00:22
+Info (12021): Found 1 design units, including 1 entities, in source file numpad.v
+    Info (12023): Found entity 1: numpad File: D:/calculator/numpad.v Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file display.v
+    Info (12023): Found entity 1: display File: D:/calculator/display.v Line: 1
+Error (12007): Top-level design entity "calculator" is undefined
+Error: Quartus Prime Analysis & Synthesis was unsuccessful. 1 error, 1 warning
+    Error: Peak virtual memory: 4732 megabytes
+    Error: Processing ended: Tue Oct 16 18:27:08 2018
+    Error: Elapsed time: 00:00:09
+    Error: Total CPU time (on all processors): 00:00:21
 
 

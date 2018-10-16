@@ -1,5 +1,12 @@
-module numpad
-	input clk
-	output [3:0]reg btn
+module numpad (
+	input clk,
+	input [3:0] rows,
+	output [3:0] out,
+	
+	output hasChanged,
+	output [3:0] value
+);
+
+// bla bla bla
 
 endmodule

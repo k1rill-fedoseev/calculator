@@ -1,2 +1,5 @@
 db/**/*
 db/*
+*.bak
+**/*.bak
+output_files/
