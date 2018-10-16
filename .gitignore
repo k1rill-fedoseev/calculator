@@ -2,4 +2,4 @@ db/**/*
 db/*
 *.bak
 **/*.bak
-output_files/
+output_files
