@@ -64,20 +64,7 @@ value = 0;
 write = 0;
 push = 0;
 pop = 1;
-#20
-
-
-value = 0;
-write = 0;
-push = 0;
-pop = 1;
-#20
-
-value = 0;
-write = 0;
-push = 0;
-pop = 1;
-#20
+#60
 
 value = 0;
 write = 0;
