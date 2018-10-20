@@ -18,18 +18,15 @@ assign error = pointer[6]; // catch error via pointer overflow
 
 always @(posedge clock)
 begin
+    if (pop)
+        pointer = pointer - 1;
     if (write)
-        memory[pointer] = value;  
-    else begin
-	if (push) begin
-	    pointer = pointer + 1;
-            memory[pointer] = 0;
-        end 
-        else begin
-            if (pop)
-            	pointer = pointer - 1;
-      	end
-    end
+        memory[pointer] = value;
+    if (push)
+    begin
+	pointer = pointer + 1;
+        memory[pointer] = 0;
+    end 
 end
 
 endmodule

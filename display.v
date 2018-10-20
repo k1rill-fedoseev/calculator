@@ -1,7 +1,8 @@
 module display (
-	input clock,
-	output [7:0] ctrl,
-	output [7:0] led
+    input clock,
+    input [31:0] value,
+    output [7:0] control,
+    output [7:0] segments
 );
 
 //  ###0###
