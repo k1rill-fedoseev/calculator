@@ -1,5 +1,9 @@
-db/**/*
-db/*
+db
+work
+*.wlf
+*.vcd
+*.mti
 *.bak
-**/*.bak
+*.qws
+*.mpf
 output_files
