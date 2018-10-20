@@ -6,4 +6,6 @@ work
 *.bak
 *.qws
 *.mpf
+*.qpf
+*.qsf
 output_files
