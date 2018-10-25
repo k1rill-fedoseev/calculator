@@ -1,15 +1,32 @@
 module main(
-	input clock, switch,
+	//Just 50 MHz clock
+	input clock,
+
+	//Representation switch 
+	input switch,
+
+	//Numpad rows and columns
 	input [3:0] numpad_rows,
 	output [3:0] numpad_columns,
+
+	//Display segments and segments control
 	output [7:0] segments,
 	output [7:0] segments_control
 );
 
+//Numpad state
 wire [4:0] pressed;
+
+//Stack elements count
 wire [5:0] count;
+
+//First and second stack elements
 wire [31:0] top, next;
+
+//Evaluated new value
 reg [31:0] new_value;
+
+//Stack control signals
 reg write, push, pop;
 
 numpad numpad(
@@ -33,6 +50,7 @@ stack stack(
 
 display_bcd display(
 	.clock (clock),
+	.error (error),
 	.switch (switch),
 	.value (top),
 	.control (segments_control),

@@ -5,6 +5,9 @@ module display_bcd (
 	//Switching hexademical and decimal representations
 	input switch,
 
+	//Asserted if something is going wrong, displaing error message
+	input error,
+
 	//Value to be displayed in binary format
 	input [31:0] value,
 
@@ -49,9 +52,10 @@ parameter D_E = 8'b01111001;
 parameter D_F = 8'b01110001;
 parameter D_R = 8'b01010000;
 parameter D_O = 8'b01011100;
+parameter D_EMPTY = 8'b00000000;
 
 //Delay counter, delaying 8192 clock cycles ~ 0.16 ms
-reg [12:0] counter = 0,
+reg [12:0] counter = 0;
 
 //Saved Binary-Coded Decimal
 reg [31:0] r_bcd;
@@ -60,7 +64,7 @@ reg [31:0] r_bcd;
 reg [2:0] ctrl = 0;
 
 //Current digit shown on the current segment
-reg [3:0] digit;
+reg [4:0] digit;
 
 //Asserted for 1 cycle when conversion to Binary-Coded Decimal is done
 wire converted;
@@ -102,21 +106,38 @@ assign segments = ~
 (digit == 13 ? D_D :
 (digit == 14 ? D_E :
 (digit == 15 ? D_F :
-))))))))))))))));
+(digit == 16 ? D_R :
+(digit == 17 ? D_O : 
+D_EMPTY
+))))))))))))))))));
 
 always  @(posedge clock)
 begin
-	//Select current digit
-	case(ctrl)
-		0: digit <= digits[3:0];
-		1: digit <= digits[7:4];
-		2: digit <= digits[11:8];
-		3: digit <= digits[15:12];
-		4: digit <= digits[19:16];
-		5: digit <= digits[23:20];
-		6: digit <= digits[27:24];
-		7: digit <= digits[31:28];
-	endcase
+
+	if (error)
+		//Display error message
+		case(ctrl)
+			0: digit <= 16;
+			1: digit <= 17;
+			2: digit <= 16;
+			3: digit <= 16;
+			4: digit <= 14;
+			5: digit <= 18;
+			6: digit <= 18;
+			7: digit <= 18;
+		endcase
+	else
+		//Select current digit
+		case(ctrl)
+			0: digit <= digits[3:0];
+			1: digit <= digits[31:4] ? digits[7:4] : D_EMPTY;
+			2: digit <= digits[31:8] ? digits[11:8] : D_EMPTY;
+			3: digit <= digits[31:12] ? digits[15:12] : D_EMPTY;
+			4: digit <= digits[31:16] ? digits[19:16] : D_EMPTY;
+			5: digit <= digits[31:20] ? digits[23:20] : D_EMPTY;
+			6: digit <= digits[31:24] ? digits[27:24] : D_EMPTY;
+			7: digit <= digits[31:28] ? digits[31:28] : D_EMPTY;
+		endcase
 
 	//Increase current delay
 	counter <= counter + 1;
