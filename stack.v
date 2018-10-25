@@ -2,6 +2,9 @@ module stack(
 	//Just 50 MHz clock
 	input clock, 
 
+	//Reset signal
+	input reset,
+
 	//PUSH operation control signal
 	input push, 
 
@@ -47,6 +50,13 @@ assign error = pointer[6];
 
 always @(posedge clock)
 begin
+	//Reseting
+	if (reset)
+	begin
+		memory[0] <= 0;
+		pointer <= 0;
+	end
+
 	//Remove one element form stack
 	if (pop)
 		pointer <= pointer - 1;
@@ -59,7 +69,7 @@ begin
 	if (push)
 	begin
 		pointer <= pointer + 1;
-		
+
 		//Here pointer is still not updated, so +1
 		memory[pointer + 1] <= 0;
 	end 

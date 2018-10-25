@@ -5,6 +5,9 @@ module main(
 	//Representation switch 
 	input switch,
 
+	//Reset signal
+	input reset,
+
 	//Numpad rows and columns
 	input [3:0] numpad_rows,
 	output [3:0] numpad_columns,
@@ -38,6 +41,7 @@ numpad numpad(
 
 stack stack(
 	.clock (clock),
+	.reset (reset),
 	.push (push),
 	.pop (pop),
 	.write (write),
