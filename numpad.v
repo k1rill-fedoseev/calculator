@@ -1,7 +1,14 @@
 module numpad (
+	//Just 50 MHz clock
 	input clock,
+
+	//Numpad rows
 	input [3:0] rows,
+
+	//Numpad columns
 	output [3:0] columns,
+
+	//State change description
 	output [4:0] value
 );
 
@@ -23,30 +30,38 @@ module numpad (
 // #      #      #      #      #
 // #############################
 
+//Previous pressed button
 reg [3:0] prev = 0;
+
+//Cuurent pressed button
 reg [3:0] cur = 0;
+
+//Cuurent column number
 reg [2:0] col = 0;
 
-assign colums = 1 << col;
+//Controlling column
+assign colums = 1 << col[1:0];
 
 always @(posedge clock)
 begin
 	col <= col + 1;
 	
+	//Evaluating current button
 	case(rows)
 		4'b0001: cur <= col * 4;
 		4'b0010: cur <= col * 4 + 1;
 		4'b0100: cur <= col * 4 + 2;
 		4'b1000: cur <= col * 4 + 3;
-		default: cur <= 0;
 	endcase
 end
 
 always @(posedge col[2])
 begin
+	//Saving previous button every 4 iterations
 	prev <= cur;
 end
 
+//Evaluating state change
 assign value = cur == prev ? 5'b00000 : {1'b1,cur};
 
 endmodule

@@ -1,5 +1,5 @@
 module main(
-	input clock,
+	input clock, switch,
 	input [3:0] numpad_rows,
 	output [3:0] numpad_columns,
 	output [7:0] segments,
@@ -33,6 +33,7 @@ stack stack(
 
 display_bcd display(
 	.clock (clock),
+	.switch (switch),
 	.value (top),
 	.control (segments_control),
 	.segments (segments)

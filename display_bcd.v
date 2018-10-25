@@ -1,7 +1,17 @@
 module display_bcd (
+	//Just 50 MHz clock
 	input clock,
+
+	//Switching hexademical and decimal representations
+	input switch,
+
+	//Value to be displayed in binary format
 	input [31:0] value,
+
+	//Segments of display
 	output [7:0] control,
+
+	//LEDs of one segment
 	output [7:0] segments
 );
 
@@ -19,36 +29,47 @@ module display_bcd (
 // #       # #7#
 //  ###3###  ###
 
-//        76543210
-//
-// 0 - 8'b00111111
-// 1 - 8'b00000110
-// 2 - 8'b01011011
-// 3 - 8'b01001111
-// 4 - 8'b01100110
-// 5 - 8'b01101101
-// 6 - 8'b01111101
-// 7 - 8'b00000111
-// 8 - 8'b01111111
-// 9 - 8'b01101111
-// . - 8'b10000000
-// A - 8'b01110111
-// b - 8'b01111100
-// c - 8'b01011000
-// d - 8'b01011110
-// E - 8'b01111001
-// F - 8'b01110001
-// r - 8'b01010000
-// o - 8'b01011100
+//All representation of used symbols
+parameter D_ZERO = 8'b00111111;
+parameter D_ONE = 8'b00000110;
+parameter D_TWO = 8'b01011011;
+parameter D_THREE = 8'b01001111;
+parameter D_FOUR = 8'b01100110;
+parameter D_FIVE = 8'b01101101;
+parameter D_SIX = 8'b01111101;
+parameter D_SEVEN = 8'b00000111;
+parameter D_EIGHT = 8'b01111111;
+parameter D_NINE = 8'b01101111;
+parameter D_DOT = 8'b10000000;
+parameter D_A = 8'b01110111;
+parameter D_B = 8'b01111100;
+parameter D_C = 8'b01011000;
+parameter D_D = 8'b01011110;
+parameter D_E = 8'b01111001;
+parameter D_F = 8'b01110001;
+parameter D_R = 8'b01010000;
+parameter D_O = 8'b01011100;
 
-reg [31:0] counter = 0, r_bcd;
+//Delay counter, delaying 8192 clock cycles ~ 0.16 ms
+reg [12:0] counter = 0,
+
+//Saved Binary-Coded Decimal
+reg [31:0] r_bcd;
+
+//Number of segment that is active on current iteration 
 reg [2:0] ctrl = 0;
 
+//Current digit shown on the current segment
 reg [3:0] digit;
 
+//Asserted for 1 cycle when conversion to Binary-Coded Decimal is done
 wire converted;
+
+//Intermediate Binary-Coded decimal value
 wire [31:0] bcd;
 
+//Decoded number digits
+wire [31:0] digits;
 
 bcd_convert #(32, 8) bcd_convert( 
 	.i_Clock(clock),
@@ -56,53 +77,60 @@ bcd_convert #(32, 8) bcd_convert(
 	.i_Start(1),
 	.o_BCD(bcd),
 	.o_DV(converted));
-	
 
-	
+//Switching final number representation
+assign digits = switch ? r_bcd : value;
+
+//Constolling segments
 assign control = ~(1 << ctrl);
-assign segments = ~(digit < 5 
-	? (digit < 3 
-	? (digit < 2 
-		? (digit == 0 
-		? 8'b00111111 // 0
-		: 8'b00000110) // 1
-		: 8'b01011011) // 2
-		: (digit == 3 
-		? 8'b01001111 // 3
-		: 8'b01100110)) // 4
-	: (digit < 8 
-	? (digit < 7 
-		? (digit == 5 
-		? 8'b01101101 // 5
-		: 8'b01111101) // 6
-		: 8'b00000111) // 7
-	: (digit == 8 
-		? 8'b01111111 // 8
-			: 8'b01101111))); // 9
+
+//Controlling LEDs
+assign segments = ~
+(digit == 0 ? D_ZERO :
+(digit == 1 ? D_ONE :
+(digit == 2 ? D_TWO :
+(digit == 3 ? D_THREE :
+(digit == 4 ? D_FOUR :
+(digit == 5 ? D_FIVE :
+(digit == 6 ? D_SIX :
+(digit == 7 ? D_SEVEN :
+(digit == 8 ? D_EIGHT :
+(digit == 9 ? D_NINE :
+(digit == 10 ? D_A :
+(digit == 11 ? D_B :
+(digit == 12 ? D_C :
+(digit == 13 ? D_D :
+(digit == 14 ? D_E :
+(digit == 15 ? D_F :
+))))))))))))))));
 
 always  @(posedge clock)
 begin
+	//Select current digit
 	case(ctrl)
-		0: digit <= r_bcd[3:0];
-		1: digit <= r_bcd[7:4];
-		2: digit <= r_bcd[11:8];
-		3: digit <= r_bcd[15:12];
-		4: digit <= r_bcd[19:16];
-		5: digit <= r_bcd[23:20];
-		6: digit <= r_bcd[27:24];
-		7: digit <= r_bcd[31:28];
+		0: digit <= digits[3:0];
+		1: digit <= digits[7:4];
+		2: digit <= digits[11:8];
+		3: digit <= digits[15:12];
+		4: digit <= digits[19:16];
+		5: digit <= digits[23:20];
+		6: digit <= digits[27:24];
+		7: digit <= digits[31:28];
 	endcase
-	if (counter == 10000)
-	begin
-	counter <= 0;
+
+	//Increase current delay
+	counter <= counter + 1;
+end
+
+always @(posedge counter[12])
+begin
+	//Delay is done, increase segment number
 	ctrl <= ctrl + 1;
-	end
-	else
-		counter <= counter + 1;
 end
 
 always @(posedge converted)
 begin
+	//Save converted Binary-Coded Decimal
 	r_bcd <= bcd;
 end
 
