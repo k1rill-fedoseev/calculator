@@ -1,4 +1,4 @@
-module display (
+module display_bcd (
 	input clock,
 	input [31:0] value,
 	output [7:0] control,
@@ -41,56 +41,69 @@ module display (
 // r - 8'b01010000
 // o - 8'b01011100
 
-reg [13:0] counter = 0;
+reg [31:0] counter = 0, r_bcd;
 reg [2:0] ctrl = 0;
 
-reg [3:0] digit [0:7];
+reg [3:0] digit;
 
-wire [3:0] dig;
+wire converted;
+wire [31:0] bcd;
 
-assign dig = digit[ctrl] > 9 ? digit[ctrl] - 10 : digit[ctrl];
 
+bcd_convert #(32, 8) bcd_convert( 
+	.i_Clock(clock),
+	.i_Binary(value),
+	.i_Start(1),
+	.o_BCD(bcd),
+	.o_DV(converted));
+	
+
+	
 assign control = ~(1 << ctrl);
-assign segments = ~(dig < 5 
-	? (dig < 3 
-	? (dig < 2 
-		? (dig == 0 
+assign segments = ~(digit < 5 
+	? (digit < 3 
+	? (digit < 2 
+		? (digit == 0 
 		? 8'b00111111 // 0
 		: 8'b00000110) // 1
 		: 8'b01011011) // 2
-		: (dig == 3 
+		: (digit == 3 
 		? 8'b01001111 // 3
 		: 8'b01100110)) // 4
-	: (dig < 8 
-	? (dig < 7 
-		? (dig == 5 
+	: (digit < 8 
+	? (digit < 7 
+		? (digit == 5 
 		? 8'b01101101 // 5
 		: 8'b01111101) // 6
 		: 8'b00000111) // 7
-	: (dig == 8 
+	: (digit == 8 
 		? 8'b01111111 // 8
 			: 8'b01101111))); // 9
-			
+
 always  @(posedge clock)
 begin
-	digit[0] <= value;
-	digit[1] <= (value >> 1) / 5;
-	digit[2] <= (value >> 2) / 25;
-	digit[3] <= (value >> 3) / 125;
-	digit[4] <= (value >> 4) / 625;
-	digit[5] <= (value >> 5) / 3125;
-	digit[6] <= (value >> 6) / 15625;
-	digit[7] <= (value >> 7) / 78125;
+	case(ctrl)
+		0: digit <= r_bcd[3:0];
+		1: digit <= r_bcd[7:4];
+		2: digit <= r_bcd[11:8];
+		3: digit <= r_bcd[15:12];
+		4: digit <= r_bcd[19:16];
+		5: digit <= r_bcd[23:20];
+		6: digit <= r_bcd[27:24];
+		7: digit <= r_bcd[31:28];
+	endcase
 	if (counter == 10000)
 	begin
 	counter <= 0;
-		if (ctrl == 7)
-			ctrl <= 0;
-		else
-			ctrl <= ctrl + 1;
+	ctrl <= ctrl + 1;
 	end
 	else
 		counter <= counter + 1;
+end
+
+always @(posedge converted)
+begin
+	r_bcd <= bcd;
 end
 
 endmodule

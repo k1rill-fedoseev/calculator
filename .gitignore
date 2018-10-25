@@ -9,3 +9,5 @@ work
 *.qpf
 *.qsf
 output_files
+incremental_db/
+calculator_description.txt
