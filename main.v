@@ -7,6 +7,9 @@ module main(
 
 	//Reset signal
 	input reset,
+	
+	//Show stack elements count switch
+	input show_count,
 
 	//Numpad rows and columns
 	input [3:0] numpad_rows,
@@ -41,7 +44,7 @@ numpad numpad(
 
 stack stack(
 	.clock (clock),
-	.reset (reset),
+	.reset (~reset),
 	.push (push),
 	.pop (pop),
 	.write (write),
@@ -56,7 +59,7 @@ display_bcd display(
 	.clock (clock),
 	.error (error),
 	.switch (switch),
-	.value (top),
+	.value (show_count ? top : count),
 	.control (segments_control),
 	.segments (segments)
 );
@@ -69,7 +72,7 @@ begin
 			write <= 1;
 			new_value <= top * 10 + 1;
 		end
-		5'b10001: // 4 is pressed
+		/*5'b10001: // 4 is pressed
 		begin
 			write <= 1;
 			new_value <= top * 10 + 4;
@@ -113,12 +116,12 @@ begin
 		begin
 			write <= 1;
 			new_value <= top * 10 + 9;
-		end
+		end*/
 		5'b11100: // A (=) is pressed
 		begin
 			push <= 1;
 		end
-		5'b11101: // B (+) is pressed
+		/*5'b11101: // B (+) is pressed
 		begin
 			pop <= 1;
 			write <= 1;
@@ -135,7 +138,7 @@ begin
 			pop <= 1;
 			write <= 1;
 			new_value <= next * top;
-		end
+		end*/
 		default:
 		begin	
 			write <= 0;

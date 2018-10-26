@@ -63,7 +63,7 @@ begin
 
 	//Update top element
 	if (write)
-		memory[pointer] <= value;
+		memory[pointer - pop] <= value;
 
 	//Push new zero element on top
 	if (push)

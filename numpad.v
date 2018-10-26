@@ -31,37 +31,48 @@ module numpad (
 // #############################
 
 //Previous pressed button
-reg [3:0] prev = 0;
+reg [4:0] prev = 0;
 
 //Cuurent pressed button
-reg [3:0] cur = 0;
+reg [4:0] cur = 0;
 
 //Cuurent column number
-reg [2:0] col = 0;
+reg [1:0] col = 0;
+
+//Counter for delay
+reg [12:0] counter = 0;
 
 //Controlling column
-assign colums = 1 << col[1:0];
+assign columns = ~(1 << col);
 
 always @(posedge clock)
 begin
+	//Increase counter
+	counter <= counter + 1;
+end
+
+always @(posedge counter[12])
+begin
 	col <= col + 1;
-	
+
 	//Evaluating current button
-	case(rows)
-		4'b0001: cur <= col * 4;
-		4'b0010: cur <= col * 4 + 1;
-		4'b0100: cur <= col * 4 + 2;
-		4'b1000: cur <= col * 4 + 3;
+	case(~rows)
+		4'b0001: cur <= col << 2 + 16;
+		4'b0010: cur <= col << 2 + 17;
+		4'b0100: cur <= col << 2 + 18;
+		4'b1000: cur <= col << 2 + 19;
+		default: cur <= 5'b00000;
 	endcase
 end
 
-always @(posedge col[2])
+//Col goes from 2'b11 to 2'b00
+always @(negedge col[1])
 begin
 	//Saving previous button every 4 iterations
 	prev <= cur;
 end
 
 //Evaluating state change
-assign value = cur == prev ? 5'b00000 : {1'b1,cur};
+assign value = (counter != 0 | prev == cur) ? 5'b00000 : cur;
 
 endmodule
