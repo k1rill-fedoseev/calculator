@@ -33,16 +33,16 @@ module display_bcd (
 //  ###3###  ###
 
 //All representation of used symbols
-parameter D_ZERO = 8'b00111111;
-parameter D_ONE = 8'b00000110;
-parameter D_TWO = 8'b01011011;
-parameter D_THREE = 8'b01001111;
-parameter D_FOUR = 8'b01100110;
-parameter D_FIVE = 8'b01101101;
-parameter D_SIX = 8'b01111101;
-parameter D_SEVEN = 8'b00000111;
-parameter D_EIGHT = 8'b01111111;
-parameter D_NINE = 8'b01101111;
+parameter D_0 = 8'b00111111;
+parameter D_1 = 8'b00000110;
+parameter D_2 = 8'b01011011;
+parameter D_3 = 8'b01001111;
+parameter D_4 = 8'b01100110;
+parameter D_5 = 8'b01101101;
+parameter D_6 = 8'b01111101;
+parameter D_7 = 8'b00000111;
+parameter D_8 = 8'b01111111;
+parameter D_9 = 8'b01101111;
 parameter D_DOT = 8'b10000000;
 parameter D_A = 8'b01110111;
 parameter D_B = 8'b01111100;
@@ -53,6 +53,11 @@ parameter D_F = 8'b01110001;
 parameter D_R = 8'b01010000;
 parameter D_O = 8'b01011100;
 parameter D_EMPTY = 8'b00000000;
+
+parameter D_E_CODE = 14;
+parameter D_R_CODE = 16;
+parameter D_O_CODE = 17;
+parameter D_EMPTY_CODE = 18;
 
 //Delay counter, delaying 8192 clock cycles ~ 0.16 ms
 reg [12:0] counter = 0;
@@ -83,23 +88,23 @@ bcd_convert #(32, 8) bcd_convert(
 	.o_DV(converted));
 
 //Switching final number representation
-assign digits = switch ? r_bcd : value;
+assign digits = switch ? value : r_bcd;
 
 //Constolling segments
 assign control = ~(1 << ctrl);
 
 //Controlling LEDs
 assign segments = ~
-(digit == 0 ? D_ZERO :
-(digit == 1 ? D_ONE :
-(digit == 2 ? D_TWO :
-(digit == 3 ? D_THREE :
-(digit == 4 ? D_FOUR :
-(digit == 5 ? D_FIVE :
-(digit == 6 ? D_SIX :
-(digit == 7 ? D_SEVEN :
-(digit == 8 ? D_EIGHT :
-(digit == 9 ? D_NINE :
+(digit == 0 ? D_0 :
+(digit == 1 ? D_1 :
+(digit == 2 ? D_2 :
+(digit == 3 ? D_3 :
+(digit == 4 ? D_4 :
+(digit == 5 ? D_5 :
+(digit == 6 ? D_6 :
+(digit == 7 ? D_7 :
+(digit == 8 ? D_8 :
+(digit == 9 ? D_9 :
 (digit == 10 ? D_A :
 (digit == 11 ? D_B :
 (digit == 12 ? D_C :
@@ -117,26 +122,26 @@ begin
 	if (error)
 		//Display error message
 		case(ctrl)
-			0: digit <= 16;
-			1: digit <= 17;
-			2: digit <= 16;
-			3: digit <= 16;
-			4: digit <= 14;
-			5: digit <= 18;
-			6: digit <= 18;
-			7: digit <= 18;
+			0: digit <= D_R_CODE;
+			1: digit <= D_O_CODE;
+			2: digit <= D_R_CODE;
+			3: digit <= D_R_CODE;
+			4: digit <= D_E_CODE;
+			5: digit <= D_EMPTY_CODE;
+			6: digit <= D_EMPTY_CODE;
+			7: digit <= D_EMPTY_CODE;
 		endcase
 	else
 		//Select current digit
 		case(ctrl)
 			0: digit <= digits[3:0];
-			1: digit <= digits[31:4] ? digits[7:4] : D_EMPTY;
-			2: digit <= digits[31:8] ? digits[11:8] : D_EMPTY;
-			3: digit <= digits[31:12] ? digits[15:12] : D_EMPTY;
-			4: digit <= digits[31:16] ? digits[19:16] : D_EMPTY;
-			5: digit <= digits[31:20] ? digits[23:20] : D_EMPTY;
-			6: digit <= digits[31:24] ? digits[27:24] : D_EMPTY;
-			7: digit <= digits[31:28] ? digits[31:28] : D_EMPTY;
+			1: digit <= digits[31:4] ? digits[7:4] : D_EMPTY_CODE;
+			2: digit <= digits[31:8] ? digits[11:8] : D_EMPTY_CODE;
+			3: digit <= digits[31:12] ? digits[15:12] : D_EMPTY_CODE;
+			4: digit <= digits[31:16] ? digits[19:16] : D_EMPTY_CODE;
+			5: digit <= digits[31:20] ? digits[23:20] : D_EMPTY_CODE;
+			6: digit <= digits[31:24] ? digits[27:24] : D_EMPTY_CODE;
+			7: digit <= digits[31:28] ? digits[31:28] : D_EMPTY_CODE;
 		endcase
 
 	//Increase current delay

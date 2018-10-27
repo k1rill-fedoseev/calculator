@@ -11,3 +11,6 @@ work
 output_files
 incremental_db/
 calculator_description.txt
+.qsys_edit
+transcript
+vsim_stacktrace.vstf
