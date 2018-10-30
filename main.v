@@ -64,6 +64,8 @@ display_bcd display(
 	.segments (segments)
 );
 
+//wire [31:0]res;
+
 always @(posedge clock)
 begin
 	case (pressed)
@@ -143,14 +145,9 @@ begin
 		begin
 			pop <= 1;
 			write <= 1;
-			if (!next[31] && !top[31])
-				new_value <= next / top;
-			else if(next[31] && top[31])
-				new_value <= (-next) / -top;
-			else if(next[31] && !top[31])
-				new_value <= -((-next) / top);
-			else
-				new_value <= -(next / -top);
+			
+			new_value <= (next[31] ^ top[31] ? -1 : 1) * ((next[31] ? -next : next) / (top[31] ? -top : top));
+			
 		end
 		5'b10111: // F (unary -) is pressed
 		begin
