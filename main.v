@@ -2,22 +2,28 @@ module main(
 	//Just 50 MHz clock
 	input clock,
 
-	//Representation switch 
-	input switch,
-
 	//Reset signal
 	input reset,
+
+	//Representation switch 
+	input show_in_hex,
 	
 	//Show stack elements count switch
 	input show_count,
+
+	//Button, switches to operations keyboard
+	input alt_numpad_key,
+
+	//Alternative keyboard indicator
+	output alt_numpad_led,
 
 	//Numpad rows and columns
 	input [3:0] numpad_rows,
 	output [3:0] numpad_columns,
 
-	//Display segments and segments control
-	output [7:0] segments,
-	output [7:0] segments_control
+	//Display and display control
+	output [7:0] display_leds,
+	output [7:0] display_control
 );
 
 //Numpad state
@@ -37,6 +43,8 @@ reg write, push, pop;
 
 numpad numpad(
 	.clock (clock),
+	.alt (alt_numpad_key),
+	.alt_led (alt_numpad_led),
 	.rows (numpad_rows),
 	.columns (numpad_columns),
 	.value (pressed)
@@ -58,10 +66,10 @@ stack stack(
 display_bcd display(
 	.clock (clock),
 	.error (error),
-	.switch (switch),
+	.show_in_hex (show_in_hex),
 	.value (show_count ? count : top),
-	.control (segments_control),
-	.segments (segments)
+	.control (display_control),
+	.leds (display_leds)
 );
 
 //wire [31:0]res;
@@ -154,7 +162,7 @@ begin
 			write <= 1;
 			new_value <= -top;
 		end
-		default:
+		default: // Nothing usefull is pressed
 		begin	
 			write <= 0;
 			push <= 0;

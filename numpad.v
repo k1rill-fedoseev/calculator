@@ -2,6 +2,12 @@ module numpad (
 	//Just 50 MHz clock
 	input clock,
 
+	//Alternative keyboard
+	input alt,
+
+	//Alternative keyboard indicator
+	output alt_led,
+
 	//Numpad rows
 	input [3:0] rows,
 
@@ -42,10 +48,20 @@ reg [1:0] col = 0;
 //Counter for delay
 reg [8:0] counter = 0;
 
+//Rows pressed flags
 reg [3:0] changed = 0;
+
+reg is_alt = 0;
 
 //Controlling column
 assign columns = ~(1 << col);
+
+assign alt_led = ~is_alt;
+
+always @(negedge alt)
+begin
+	is_alt <= ~is_alt;
+end
 
 always @(posedge clock)
 begin
@@ -97,7 +113,6 @@ always @(negedge col[1])
 begin
 	//Saving previous button every 4 iterations
 	prev <= cur;
-	//cur <= 0;
 end
 
 //Evaluating state change
