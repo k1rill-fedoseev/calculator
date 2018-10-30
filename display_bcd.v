@@ -3,7 +3,7 @@ module display_bcd (
 	input clock,
 
 	//Switching hexademical and decimal representations
-	input switch,
+	input show_in_hex,
 
 	//Asserted if something is going wrong, displaing error message
 	input error,
@@ -15,7 +15,7 @@ module display_bcd (
 	output [7:0] control,
 
 	//LEDs of one segment
-	output [7:0] segments
+	output [7:0] leds
 );
 
 //  ###0###
@@ -102,13 +102,13 @@ assign sign = value[31];
 assign unsigned_number = sign ? -value : value;
 
 //Switching final number representation
-assign digits = switch ? unsigned_number : r_bcd;
+assign digits = show_in_hex ? unsigned_number : r_bcd;
 
 //Constolling segments
 assign control = ~(1 << ctrl);
 
 //Controlling LEDs
-assign segments = ~
+assign leds = ~
 (digit == 0 ? D_0 :
 (digit == 1 ? D_1 :
 (digit == 2 ? D_2 :
