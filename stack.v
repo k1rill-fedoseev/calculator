@@ -31,11 +31,11 @@ module stack(
 	output error
 );
 
-//Stack memory for 64 words
-reg [31:0] memory [0:63]; 
+//Stack memory for 32 words
+reg [31:0] memory [0:31]; 
 
 //Stack pointer on top element, indexing from 0
-reg [6:0] pointer = 0;
+reg [5:0] pointer = 0;
 
 //First element by default is 0
 initial memory[0] = 0;
@@ -45,8 +45,8 @@ assign top = memory[pointer];
 //Second element if such exists, 0 otherwise
 assign next = pointer == 0 ? 0 : memory[pointer - 1];
 
-assign count = pointer[5:0] + 1;
-assign error = pointer[6];
+assign count = pointer[4:0] + 1;
+assign error = pointer[5];
 
 always @(posedge clock)
 begin

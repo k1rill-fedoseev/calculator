@@ -4,8 +4,8 @@
 			$display("ASSERTION FAILED #", $realtime / 1000000); \
 			$finish; \
 		end \
-	else \
-		$display("PASSED #", $realtime / 1000000);
+		else \
+			$display("PASSED #", $realtime / 1000000);
 	
 module tests ();
 	parameter D_0 = 8'b00111111;
@@ -27,6 +27,7 @@ module tests ();
 	parameter D_F = 8'b01110001;
 	parameter D_R = 8'b01010000;
 	parameter D_O = 8'b01011100;
+	parameter D_MINUS = 8'b01000000;
 	parameter D_EMPTY = 8'b00000000;
 	
 	parameter BTN_1 = 5'b10000;
@@ -211,7 +212,7 @@ module tests ();
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_9, D_0, D_0})
 
 		// #12
-		//PLUS
+		//ADD
 		cur_btn = BTN_B;
 		#1000000
 		`assert(main.stack.top, 1023)
@@ -220,12 +221,13 @@ module tests ();
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_1, D_0, D_2, D_3})
 
 		// #13
-		//SWITCH_TO_HEX
+		//SWITCH TO HEX
 		switch = 1;
 		#1000000
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_3, D_F, D_F})
 
 		// #14
+		//PUSH
 		switch = 0;
 		cur_btn = BTN_A;
 		#1000000
@@ -234,6 +236,7 @@ module tests ();
 		`assert(main.stack.count, 2)
 
 		// #15
+		//WRITE 8
 		cur_btn = BTN_8;
 		#1000000
 		`assert(main.stack.top, 8)
@@ -241,11 +244,106 @@ module tests ();
 		`assert(main.stack.count, 2)
 
 		// #16
+		//SUBTRACT
 		cur_btn = BTN_C;
 		#1000000
 		`assert(main.stack.top, 1015)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
+
+		// #17
+		//PUSH
+		switch = 0;
+		cur_btn = BTN_A;
+		#1000000
+		`assert(main.stack.top, 0)
+		`assert(main.stack.next, 1015)
+		`assert(main.stack.count, 2)
+
+		// #18
+		//WRITE 7
+		cur_btn = BTN_7;
+		#1000000
+		`assert(main.stack.top, 7)
+		`assert(main.stack.next, 1015)
+		`assert(main.stack.count, 2)
+
+		// #19
+		//MULTIPLY
+		cur_btn = BTN_D;
+		#1000000
+		`assert(main.stack.top, 7105)
+		`assert(main.stack.next, 0)
+		`assert(main.stack.count, 1)
+
+		// #20
+		//PUSH
+		switch = 0;
+		cur_btn = BTN_A;
+		#1000000
+		`assert(main.stack.top, 0)
+		`assert(main.stack.next, 7105)
+		`assert(main.stack.count, 2)
+
+		// #21
+		//WRITE 6
+		cur_btn = BTN_6;
+		#1000000
+		`assert(main.stack.top, 6)
+		`assert(main.stack.next, 7105)
+		`assert(main.stack.count, 2)
+
+		// #22
+		//DIVIDE
+		cur_btn = BTN_E;
+		#1000000
+		`assert(main.stack.top, 1184)
+		`assert(main.stack.next, 0)
+		`assert(main.stack.count, 1)
+
+		// #23
+		//UNARY MINUS
+		cur_btn = BTN_F;
+		#1000000
+		`assert(main.stack.top, -1184)
+		`assert(main.stack.next, 0)
+		`assert(main.stack.count, 1)
+		`assert(displayed, {D_MINUS, D_EMPTY, D_EMPTY, D_EMPTY, D_1, D_1, D_8, D_4})
+
+		// #24
+		//PUSH
+		switch = 0;
+		cur_btn = BTN_A;
+		#1000000
+		`assert(main.stack.top, 0)
+		`assert(main.stack.next, -1184)
+		`assert(main.stack.count, 2)
+
+		// #25
+		//WRITE 5
+		cur_btn = BTN_5;
+		#1000000
+		`assert(main.stack.top, 5)
+		`assert(main.stack.next, -1184)
+		`assert(main.stack.count, 2)
+
+		// #26
+		//UNARY MINUS
+		cur_btn = BTN_F;
+		#1000000
+		`assert(main.stack.top, -5)
+		`assert(main.stack.next, -1184)
+		`assert(main.stack.count, 2)
+		`assert(displayed, {D_MINUS, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_5})
+
+		// #27
+		//DIVIDE
+		cur_btn = BTN_E;
+		#1000000
+		`assert(main.stack.top, 236)
+		`assert(main.stack.next, 0)
+		`assert(main.stack.count, 1)
+		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_2, D_3, D_6})
 
 		$display("TESTS ENDED");
 		$stop;

@@ -52,12 +52,14 @@ parameter D_E = 8'b01111001;
 parameter D_F = 8'b01110001;
 parameter D_R = 8'b01010000;
 parameter D_O = 8'b01011100;
+parameter D_MINUS = 8'b01000000;
 parameter D_EMPTY = 8'b00000000;
 
 parameter D_E_CODE = 14;
 parameter D_R_CODE = 16;
 parameter D_O_CODE = 17;
-parameter D_EMPTY_CODE = 18;
+parameter D_MINUS_CODE = 18;
+parameter D_EMPTY_CODE = 31;
 
 //Delay counter, delaying 8192 clock cycles ~ 0.16 ms
 reg [12:0] counter = 0;
@@ -80,15 +82,27 @@ wire [31:0] bcd;
 //Decoded number digits
 wire [31:0] digits;
 
+//Number sign
+wire sign;
+
+//Digits from unsigned numbers
+wire [31:0] unsigned_number;
+
 bcd_convert #(32, 8) bcd_convert( 
 	.i_Clock(clock),
-	.i_Binary(value),
-	.i_Start(1),
+	.i_Binary(unsigned_number),
+	.i_Start(1'b1),
 	.o_BCD(bcd),
 	.o_DV(converted));
 
+//Get number sign
+assign sign = value[31];
+
+//Get unsigned number
+assign unsigned_number = sign ? -value : value;
+
 //Switching final number representation
-assign digits = switch ? value : r_bcd;
+assign digits = switch ? unsigned_number : r_bcd;
 
 //Constolling segments
 assign control = ~(1 << ctrl);
@@ -113,8 +127,9 @@ assign segments = ~
 (digit == 15 ? D_F :
 (digit == 16 ? D_R :
 (digit == 17 ? D_O : 
+(digit == 18 ? D_MINUS : 
 D_EMPTY
-))))))))))))))))));
+)))))))))))))))))));
 
 always  @(posedge clock)
 begin
@@ -141,7 +156,7 @@ begin
 			4: digit <= digits[31:16] ? digits[19:16] : D_EMPTY_CODE;
 			5: digit <= digits[31:20] ? digits[23:20] : D_EMPTY_CODE;
 			6: digit <= digits[31:24] ? digits[27:24] : D_EMPTY_CODE;
-			7: digit <= digits[31:28] ? digits[31:28] : D_EMPTY_CODE;
+			7: digit <= sign ? D_MINUS_CODE : (digits[31:28] ? digits[31:28] : D_EMPTY_CODE);
 		endcase
 
 	//Increase current delay

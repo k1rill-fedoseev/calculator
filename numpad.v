@@ -33,14 +33,16 @@ module numpad (
 //Previous pressed button
 reg [4:0] prev = 0;
 
-//Cuurent pressed button
+//Current pressed button
 reg [4:0] cur = 0;
 
-//Cuurent column number
+//Current column number
 reg [1:0] col = 0;
 
 //Counter for delay
 reg [8:0] counter = 0;
+
+reg [3:0] changed = 0;
 
 //Controlling column
 assign columns = ~(1 << col);
@@ -56,11 +58,31 @@ always @(negedge counter[8])
 begin
 	//Evaluating current button
 	case(~rows)
-		4'b0001: cur <= col[1:0] * 4 + 16;
-		4'b0010: cur <= col[1:0] * 4 + 17;
-		4'b0100: cur <= col[1:0] * 4 + 18;
-		4'b1000: cur <= col[1:0] * 4 + 19;
-		default: cur <= cur;
+		4'b0001:
+		begin
+		changed[col] <= 1;
+		cur <= col[1:0] * 4 + 16;
+		end
+		4'b0010:
+		begin
+		changed[col] <= 1;
+		cur <= col[1:0] * 4 + 17;
+		end
+		4'b0100:
+		begin
+		changed[col] <= 1;
+		cur <= col[1:0] * 4 + 18;
+		end
+		4'b1000:
+		begin
+		changed[col] <= 1;
+		cur <= col[1:0] * 4 + 19;
+		end
+		default:
+		begin
+		changed[col] <= 0;
+		cur <= changed ? cur : 0;
+		end
 	endcase
 end
 
@@ -75,7 +97,7 @@ always @(negedge col[1])
 begin
 	//Saving previous button every 4 iterations
 	prev <= cur;
-	cur <= 0;
+	//cur <= 0;
 end
 
 //Evaluating state change
