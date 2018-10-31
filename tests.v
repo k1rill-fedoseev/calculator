@@ -49,28 +49,32 @@ module tests ();
 	parameter BTN_EMPTY = 5'b00000;
 
 	reg clock = 0;
-	reg switch = 0;
+	reg show_in_hex = 0;
 	reg reset = 0;
 	reg show_count = 0;
+	reg alt_numpad_key = 0;
+	wire alt_numpad_led;
 	wire [3:0] numpad_rows;
 	wire [3:0] numpad_columns;
 	wire [7:0] leds;
 	wire [7:0] leds_control;
 
 	reg [3:0] r_numpad_rows;
-	reg [4:0] cur_btn = 5'b00000;
+	reg [4:0] cur_btn = BTN_EMPTY;
 
 	reg [63:0] displayed = 0;
 
 	main main(
 		.clock(clock),
-		.switch(switch),
+		.show_in_hex(show_in_hex),
 		.reset(~reset),
+		.alt_numpad_key(~alt_numpad_key),
+		.alt_numpad_led(alt_numpad_led),
 		.show_count(show_count),
 		.numpad_rows(numpad_rows),
 		.numpad_columns(numpad_columns),
-		.segments(leds),
-		.segments_control(leds_control)
+		.display_leds(leds),
+		.display_control(leds_control)
 	);
 
 	always @(*)
@@ -161,14 +165,14 @@ module tests ();
 		// #6
 		//SWITCH TO HEX
 		cur_btn = BTN_EMPTY;
-		switch = 1;
+		show_in_hex = 1;
 		#1000000
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_7, D_B})
 
 		// #7
 		//PUSH
-		cur_btn = BTN_A;
-		switch = 0;
+		cur_btn = BTN_B;
+		show_in_hex = 0;
 		#1000000
 		`assert(main.stack.top, 0)
 		`assert(main.stack.next, 123)
@@ -213,23 +217,31 @@ module tests ();
 
 		// #12
 		//ADD
-		cur_btn = BTN_B;
-		#1000000
+		alt_numpad_key = 1;
+		cur_btn = BTN_EMPTY;
+		#100000
+		`assert(alt_numpad_led, 0)
+		`assert(main.numpad.is_alt, 1)
+		alt_numpad_key = 0;
+		cur_btn = BTN_1;
+		#900000
+		`assert(alt_numpad_led, 1)
+		`assert(main.numpad.is_alt, 0)
 		`assert(main.stack.top, 1023)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_1, D_0, D_2, D_3})
 
 		// #13
-		//SWITCH TO HEX
-		switch = 1;
+		//SWITCH TO HEX	
+		show_in_hex = 1;
 		#1000000
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_3, D_F, D_F})
 
 		// #14
 		//PUSH
-		switch = 0;
-		cur_btn = BTN_A;
+		show_in_hex = 0;
+		cur_btn = BTN_B;
 		#1000000
 		`assert(main.stack.top, 0)
 		`assert(main.stack.next, 1023)
@@ -245,16 +257,17 @@ module tests ();
 
 		// #16
 		//SUBTRACT
-		cur_btn = BTN_C;
+		alt_numpad_key = 1;
+		cur_btn = BTN_2;
 		#1000000
 		`assert(main.stack.top, 1015)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
+		alt_numpad_key = 0;
 
 		// #17
 		//PUSH
-		switch = 0;
-		cur_btn = BTN_A;
+		cur_btn = BTN_B;
 		#1000000
 		`assert(main.stack.top, 0)
 		`assert(main.stack.next, 1015)
@@ -270,16 +283,17 @@ module tests ();
 
 		// #19
 		//MULTIPLY
-		cur_btn = BTN_D;
+		alt_numpad_key = 1;
+		cur_btn = BTN_3;
 		#1000000
 		`assert(main.stack.top, 7105)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
+		alt_numpad_key = 0;
 
 		// #20
 		//PUSH
-		switch = 0;
-		cur_btn = BTN_A;
+		cur_btn = BTN_B;
 		#1000000
 		`assert(main.stack.top, 0)
 		`assert(main.stack.next, 7105)
@@ -295,11 +309,13 @@ module tests ();
 
 		// #22
 		//DIVIDE
-		cur_btn = BTN_E;
+		alt_numpad_key = 1;
+		cur_btn = BTN_A;
 		#1000000
 		`assert(main.stack.top, 1184)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
+		alt_numpad_key = 0;
 
 		// #23
 		//UNARY MINUS
@@ -312,8 +328,7 @@ module tests ();
 
 		// #24
 		//PUSH
-		switch = 0;
-		cur_btn = BTN_A;
+		cur_btn = BTN_B;
 		#1000000
 		`assert(main.stack.top, 0)
 		`assert(main.stack.next, -1184)
@@ -338,12 +353,14 @@ module tests ();
 
 		// #27
 		//DIVIDE
-		cur_btn = BTN_E;
+		alt_numpad_key = 1;
+		cur_btn = BTN_A;
 		#1000000
 		`assert(main.stack.top, 236)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_2, D_3, D_6})
+		alt_numpad_key = 0;
 
 		$display("TESTS ENDED");
 		$stop;

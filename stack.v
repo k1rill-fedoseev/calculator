@@ -11,8 +11,10 @@ module stack(
 	//POP operation control signal
 	input pop, 
 
+	//SWAP operation control signal
+	input swap,
+
 	//UPDATE operation control signal
-	//UPDATE means write top stack element again
 	input write,
 
 	//Value to write
@@ -40,12 +42,16 @@ reg [5:0] pointer = 0;
 //First element by default is 0
 initial memory[0] = 0;
 
+//Top stack element
 assign top = memory[pointer];
 
 //Second element if such exists, 0 otherwise
 assign next = pointer == 0 ? 0 : memory[pointer - 1];
 
+//Stack elements count
 assign count = pointer[4:0] + 1;
+
+//Stack overflow signal
 assign error = pointer[5];
 
 always @(posedge clock)
@@ -60,6 +66,13 @@ begin
 	//Remove one element form stack
 	if (pop)
 		pointer <= pointer - 1;
+
+	//Swaps top and next elements
+	if (swap)
+	begin
+		memory[pointer] <= memory[pointer - 1];
+		memory[pointer - 1] <= memory[pointer];
+	end
 
 	//Update top element
 	if (write)

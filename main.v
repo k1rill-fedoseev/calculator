@@ -26,8 +26,44 @@ module main(
 	output [7:0] display_control
 );
 
+// 1  2  3  C
+// 4  5  6  PUSH
+// 7  8  9  POP
+// 0  +- CE SWAP
+
+parameter BTN_0 = 6'b110011;
+parameter BTN_1 = 6'b110000;
+parameter BTN_2 = 6'b110100;
+parameter BTN_3 = 6'b111000;
+parameter BTN_4 = 6'b110001;
+parameter BTN_5 = 6'b110101;
+parameter BTN_6 = 6'b111001;
+parameter BTN_7 = 6'b110010;
+parameter BTN_8 = 6'b110110;
+parameter BTN_9 = 6'b111010;
+parameter BTN_CLEAR_DIGIT = 6'b111100;
+parameter BTN_PUSH = 6'b111101;
+parameter BTN_POP = 6'b111110;
+parameter BTN_SWAP = 6'b111111;
+parameter BTN_CLEAR_NUMBER = 6'b111011;
+parameter BTN_UNARY_MINUS = 6'b110111;
+
+//  +   -   *   /
+// sqr cbe inc dec
+
+parameter BTN_ADDITION = 6'b100000;
+parameter BTN_SUBTRACTION = 6'b100100;
+parameter BTN_MULTIPLICATION = 6'b101000;
+parameter BTN_DIVISION = 6'b101100;
+parameter BTN_SQUARE = 6'b100001;
+parameter BTN_CUBE = 6'b100101;
+parameter BTN_INCREMENT = 6'b101001;
+parameter BTN_DECREMENT = 6'b100001;
+
 //Numpad state
-wire [4:0] pressed;
+wire [5:0] pressed;
+
+wire changed;
 
 //Stack elements count
 wire [5:0] count;
@@ -39,11 +75,11 @@ wire [31:0] top, next;
 reg [31:0] new_value;
 
 //Stack control signals
-reg write, push, pop;
+reg write, push, pop, swap;
 
 numpad numpad(
 	.clock (clock),
-	.alt (alt_numpad_key),
+	.alt_key (~alt_numpad_key),
 	.alt_led (alt_numpad_led),
 	.rows (numpad_rows),
 	.columns (numpad_columns),
@@ -55,6 +91,7 @@ stack stack(
 	.reset (~reset),
 	.push (push),
 	.pop (pop),
+	.swap (swap),
 	.write (write),
 	.value (new_value),
 	.top (top),
@@ -72,103 +109,140 @@ display_bcd display(
 	.leds (display_leds)
 );
 
-//wire [31:0]res;
+wire [31:0] res;
+assign res = ((next[31] ? -next : next) / (top[31] ? -top : top));
 
 always @(posedge clock)
 begin
 	case (pressed)
-		5'b10000: // 1 is pressed
-		begin
-			write <= 1;
-			new_value <= top * 10 + 1;
-		end
-		5'b10001: // 4 is pressed
-		begin
-			write <= 1;
-			new_value <= top * 10 + 4;
-		end
-		5'b10010: // 7 is pressed
-		begin
-			write <= 1;
-			new_value <= top * 10 + 7;
-		end
-		5'b10011: // 0 is pressed
+		BTN_0:
 		begin
 			write <= 1;
 			new_value <= top * 10;
 		end
-	 	5'b10100: // 2 is pressed
+		BTN_1:
+		begin
+			write <= 1;
+			new_value <= top * 10 + 1;
+		end
+		BTN_2:
 		begin
 			write <= 1;
 			new_value <= top * 10 + 2;
 		end
-		5'b10101: // 5 is pressed
-		begin
-			write <= 1;
-			new_value <= top * 10 + 5;
-		end
-		5'b10110: // 8 is pressed
-		begin
-			write <= 1;
-			new_value <= top * 10 + 8;
-		end
-		5'b11000: // 3 is pressed
+		BTN_3:
 		begin
 			write <= 1;
 			new_value <= top * 10 + 3;
 		end
-		5'b11001: // 6 is pressed
+		BTN_4:
+		begin
+			write <= 1;
+			new_value <= top * 10 + 4;
+		end
+		BTN_5:
+		begin
+			write <= 1;
+			new_value <= top * 10 + 5;
+		end
+		BTN_6:
 		begin
 			write <= 1;
 			new_value <= top * 10 + 6;
 		end
-		5'b11010: // 9 is pressed
+		BTN_7:
+		begin
+			write <= 1;
+			new_value <= top * 10 + 7;
+		end
+		BTN_8: 
+		begin
+			write <= 1;
+			new_value <= top * 10 + 8;
+		end
+		BTN_9:
 		begin
 			write <= 1;
 			new_value <= top * 10 + 9;
 		end
-		5'b11100: // A (=) is pressed
+		BTN_CLEAR_DIGIT:
+		begin
+			write <= 1;
+			new_value <= top / 10;
+		end
+		BTN_CLEAR_NUMBER:
+		begin
+			write <= 1;
+			new_value <= 0;
+		end
+		BTN_PUSH:
 		begin
 			push <= 1;
 		end
-		5'b11101: // B (+) is pressed
+		BTN_POP:
+		begin
+			pop <= 1;
+		end
+		BTN_SWAP:
+		begin
+			swap <= 1;
+		end
+		BTN_UNARY_MINUS:
+		begin
+			write <= 1;
+			new_value <= -top;
+		end
+		BTN_ADDITION:
 		begin
 			pop <= 1;
 			write <= 1;
 			new_value <= next + top;
 		end
-		5'b11110: // C (-) is pressed
+		BTN_SUBTRACTION:
 		begin
 			pop <= 1;
 			write <= 1;
 			new_value <= next - top;
 		end
-		5'b11111: // D (*) is pressed
+		BTN_MULTIPLICATION:
 		begin
 			pop <= 1;
 			write <= 1;
 			new_value <= next * top;
 		end
-		5'b11011: // E (/) is pressed
+		BTN_DIVISION:
 		begin
 			pop <= 1;
 			write <= 1;
-			
-			new_value <= (next[31] ^ top[31] ? -1 : 1) * ((next[31] ? -next : next) / (top[31] ? -top : top));
-			
+			new_value <= (next[31] ^ top[31] ? -res : res);
 		end
-		5'b10111: // F (unary -) is pressed
+		BTN_SQUARE:
 		begin
 			write <= 1;
-			new_value <= -top;
+			new_value <= top * top;
+		end
+		BTN_CUBE:
+		begin
+			write <= 1;
+			new_value <= top * top * top;
+		end
+		BTN_INCREMENT:
+		begin
+			write <= 1;
+			new_value <= top + 1;
+		end
+		BTN_DECREMENT:
+		begin
+			write <= 1;
+			new_value <= top - 1;
 		end
 		default: // Nothing usefull is pressed
 		begin	
 			write <= 0;
 			push <= 0;
 			pop <= 0;
+			swap <= 0;
 		end
-		
 	endcase
 end
 
