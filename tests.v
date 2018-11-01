@@ -362,6 +362,116 @@ module tests ();
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_2, D_3, D_6})
 		alt_numpad_key = 0;
 
+		// #28
+		//clear digit
+		cur_btn = BTN_EMPTY;
+		#100000
+		cur_btn = BTN_A;
+		#900000
+		`assert(main.stack.top, 23)
+		`assert(main.stack.next, 0)
+		`assert(main.stack.count, 1)
+		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_2, D_3})
+
+		// #29
+		//clear number
+		cur_btn = BTN_E;
+		#1000000
+		`assert(main.stack.top, 0)
+		`assert(main.stack.next, 0)
+		`assert(main.stack.count, 1)
+		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_0})
+
+		// #30
+		//push 7 and 8
+		cur_btn = BTN_7;
+		#100000
+		cur_btn = BTN_B;
+		#100000
+		cur_btn = BTN_8;
+		#800000
+		`assert(main.stack.top, 8)
+		`assert(main.stack.next, 7)
+		`assert(main.stack.count, 2)
+
+		// #31
+		//SWAP
+		cur_btn = BTN_D;
+		#1000000
+		`assert(main.stack.top, 7)
+		`assert(main.stack.next, 8)
+		`assert(main.stack.count, 2)
+
+		// #32
+		//POP
+		cur_btn = BTN_C;
+		#1000000
+		`assert(main.stack.top, 8)
+		`assert(main.stack.next, 0)
+		`assert(main.stack.count, 1)
+
+		// #33
+		// INC, DEC, SQR, CUBE
+		alt_numpad_key = 1;
+		cur_btn = BTN_6;
+		#100000
+		`assert(main.stack.top, 9)
+		`assert(main.stack.next, 0)
+		`assert(main.stack.count, 1)
+		alt_numpad_key = 0;
+		#100000
+
+		alt_numpad_key = 1;
+		cur_btn = BTN_B;
+		#100000
+		`assert(main.stack.top, 8)
+		`assert(main.stack.next, 0)
+		`assert(main.stack.count, 1)
+		alt_numpad_key = 0;
+		#100000
+
+		alt_numpad_key = 1;
+		cur_btn = BTN_4;
+		#100000
+		`assert(main.stack.top, 64)
+		`assert(main.stack.next, 0)
+		`assert(main.stack.count, 1)
+		alt_numpad_key = 0;
+		#100000
+
+		alt_numpad_key = 1;
+		cur_btn = BTN_5;
+		#100000
+		`assert(main.stack.top, 262144)
+		`assert(main.stack.next, 0)
+		`assert(main.stack.count, 1)
+		alt_numpad_key = 0;
+		#300000
+
+		// #34
+		//DIV BY 0
+		cur_btn = BTN_B;
+		#100000
+		`assert(main.stack.top, 0)
+		`assert(main.stack.next, 262144)
+		`assert(main.stack.count, 2)
+		#100000
+
+		alt_numpad_key = 1;
+		cur_btn = BTN_A;
+		#400000
+		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_E, D_R, D_R, D_O, D_R})
+		alt_numpad_key = 0;
+		#100000
+
+		reset = 1;
+		#300000
+		reset = 0;
+		`assert(main.stack.top, 0)
+		`assert(main.stack.next, 0)
+		`assert(main.stack.count, 1)
+		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_0})
+
 		$display("TESTS ENDED");
 		$stop;
 	end

@@ -69,57 +69,54 @@ begin
 	//Increase counter
 	counter <= counter + 1;
 
+	//Evaluating alternative keyboard signal
 	if (value != BTN_EMPTY)
 		is_alt <= 0;
 	else
-		is_alt <= (alt_key == 1 & prev_alt_key == 0) ? ~is_alt : is_alt;
+		is_alt <= (alt_key == 1 && prev_alt_key == 0) ? ~is_alt : is_alt;
 	prev_alt_key <= alt_key;
-end
 
-//counter goes grom 9'b111111111 to 9'b000000000, update current button, if any row is asserted
-always @(negedge counter[8])
-begin
-	//Evaluating current button
-	case(~rows)
-		4'b0001:
-		begin
-		pressed[col] <= 1;
-		cur <= {1'b1, ~is_alt, col, 2'b00};
-		end
-		4'b0010:
-		begin
-		pressed[col] <= 1;
-		cur <= {1'b1, ~is_alt, col, 2'b01};
-		end
-		4'b0100:
-		begin
-		pressed[col] <= 1;
-		cur <= {1'b1, ~is_alt, col, 2'b10};
-		end
-		4'b1000:
-		begin
-		pressed[col] <= 1;
-		cur <= {1'b1, ~is_alt, col, 2'b11};
-		end
-		default:
-		begin
-		pressed[col] <= 0;
-		cur <= pressed ? cur : BTN_EMPTY;
-		end
-	endcase
-end
+	if (&counter)
+	begin
+		//Evaluating current button
+		case(~rows)
+			4'b0001:
+			begin
+			pressed[col] <= 1;
+			cur <= {1'b1, ~is_alt, col, 2'b00};
+			end
+			4'b0010:
+			begin
+			pressed[col] <= 1;
+			cur <= {1'b1, ~is_alt, col, 2'b01};
+			end
+			4'b0100:
+			begin
+			pressed[col] <= 1;
+			cur <= {1'b1, ~is_alt, col, 2'b10};
+			end
+			4'b1000:
+			begin
+			pressed[col] <= 1;
+			cur <= {1'b1, ~is_alt, col, 2'b11};
+			end
+			default:
+			begin
+			pressed[col] <= 0;
+			cur <= pressed ? cur : BTN_EMPTY;
+			end
+		endcase	
+	end
 
-//increase column number when counter goes from 9'011111111 to 9'b100000000, using different edges of counter[8] to let counter pass through zero, to assert wire value if need
-always @(posedge counter[8])
-begin
-	col <= col + 1;
-end
+	//increase column number when counter is 9'011111111, using different edges of counter[8] to let counter pass through zero, to assert wire value if need
+	if (~counter[8] && &counter[7:0])
+	begin
+		//Saving previous button every 4 iterations
+		if (&col)
+			prev <= cur;
 
-//Col goes from 2'b11 to 2'b00
-always @(negedge col[1])
-begin
-	//Saving previous button every 4 iterations
-	prev <= cur;
+		col <= col + 1;
+	end
 end
 
 //Evaluating state change

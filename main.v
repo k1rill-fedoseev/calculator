@@ -58,12 +58,10 @@ parameter BTN_DIVISION = 6'b101100;
 parameter BTN_SQUARE = 6'b100001;
 parameter BTN_CUBE = 6'b100101;
 parameter BTN_INCREMENT = 6'b101001;
-parameter BTN_DECREMENT = 6'b100001;
+parameter BTN_DECREMENT = 6'b101101;
 
 //Numpad state
 wire [5:0] pressed;
-
-wire changed;
 
 //Stack elements count
 wire [5:0] count;
@@ -71,11 +69,15 @@ wire [5:0] count;
 //First and second stack elements
 wire [31:0] top, next;
 
+wire stack_error;
+
 //Evaluated new value
 reg [31:0] new_value;
 
 //Stack control signals
 reg write, push, pop, swap;
+
+reg arithmetic_error = 0;
 
 numpad numpad(
 	.clock (clock),
@@ -97,12 +99,12 @@ stack stack(
 	.top (top),
 	.next (next),
 	.count (count),
-	.error (error)
+	.error (stack_error)
 );
 
 display_bcd display(
 	.clock (clock),
-	.error (error),
+	.error (stack_error || arithmetic_error),
 	.show_in_hex (show_in_hex),
 	.value (show_count ? count : top),
 	.control (display_control),
@@ -114,6 +116,9 @@ assign res = ((next[31] ? -next : next) / (top[31] ? -top : top));
 
 always @(posedge clock)
 begin
+	if (~reset)
+		arithmetic_error <= 0;
+
 	case (pressed)
 		BTN_0:
 		begin
@@ -215,6 +220,7 @@ begin
 			pop <= 1;
 			write <= 1;
 			new_value <= (next[31] ^ top[31] ? -res : res);
+			arithmetic_error <= ~(|top);
 		end
 		BTN_SQUARE:
 		begin

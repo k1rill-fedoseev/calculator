@@ -131,9 +131,8 @@ assign leds = ~
 D_EMPTY
 )))))))))))))))))));
 
-always  @(posedge clock)
+always @(posedge clock)
 begin
-
 	if (error)
 		//Display error message
 		case(ctrl)
@@ -161,18 +160,14 @@ begin
 
 	//Increase current delay
 	counter <= counter + 1;
-end
-
-always @(posedge counter[12])
-begin
+	
 	//Delay is done, increase segment number
-	ctrl <= ctrl + 1;
-end
-
-always @(posedge converted)
-begin
+	if (counter == 13'b1000000000000)
+		ctrl <= ctrl + 1;
+	
 	//Save converted Binary-Coded Decimal
-	r_bcd <= bcd;
+	if (converted)
+		r_bcd <= bcd;
 end
 
 endmodule
