@@ -107,32 +107,38 @@ assign digits = show_in_hex ? unsigned_number : r_bcd;
 //Constolling segments
 assign control = ~(1 << ctrl);
 
+
+reg [7:0] r_leds;
+
 //Controlling LEDs
-assign leds = ~
-(digit == 0 ? D_0 :
-(digit == 1 ? D_1 :
-(digit == 2 ? D_2 :
-(digit == 3 ? D_3 :
-(digit == 4 ? D_4 :
-(digit == 5 ? D_5 :
-(digit == 6 ? D_6 :
-(digit == 7 ? D_7 :
-(digit == 8 ? D_8 :
-(digit == 9 ? D_9 :
-(digit == 10 ? D_A :
-(digit == 11 ? D_B :
-(digit == 12 ? D_C :
-(digit == 13 ? D_D :
-(digit == 14 ? D_E :
-(digit == 15 ? D_F :
-(digit == 16 ? D_R :
-(digit == 17 ? D_O : 
-(digit == 18 ? D_MINUS : 
-D_EMPTY
-)))))))))))))))))));
+assign leds = ~r_leds;
+
 
 always @(posedge clock)
 begin
+	case (digit)
+		0: r_leds <= D_0;
+		1: r_leds <= D_1;
+		2: r_leds <= D_2;
+		3: r_leds <= D_3;
+		4: r_leds <= D_4;
+		5: r_leds <= D_5;
+		6: r_leds <= D_6;
+		7: r_leds <= D_7;
+		8: r_leds <= D_8;
+		9: r_leds <= D_9;
+		10: r_leds <= D_A;
+		11: r_leds <= D_B;
+		12: r_leds <= D_C;
+		13: r_leds <= D_D;
+		14: r_leds <= D_E;
+		15: r_leds <= D_F;
+		16: r_leds <= D_R;
+		17: r_leds <= D_O;
+		18: r_leds <= D_MINUS;
+		default: r_leds <= D_EMPTY;
+	endcase
+
 	if (error)
 		//Display error message
 		case(ctrl)
