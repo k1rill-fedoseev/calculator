@@ -14,10 +14,12 @@ module numpad (
 	//Numpad columns
 	output [3:0] columns,
 
-	//State change description {is_changed, keyboard, btn[3:0]}
+	//State change description [5:5] - is_changed, [4:4] - keyboard, [3:0] - button
 	output [5:0] value
 );
 
+//  col 0  col 1  col 2  col 3
+//
 // #############################
 // #      #      #      #      #
 // # 1(0) # 2(4) # 3(8) # A(12)#  row 0
@@ -76,7 +78,7 @@ begin
 		is_alt <= (alt_key == 1 && prev_alt_key == 0) ? ~is_alt : is_alt;
 	prev_alt_key <= alt_key;
 
-	if (&counter)
+	if (counter == 9'b1111111111)
 	begin
 		//Evaluating current button
 		case(~rows)
@@ -109,7 +111,7 @@ begin
 	end
 
 	//increase column number when counter is 9'011111111, using different edges of counter[8] to let counter pass through zero, to assert wire value if need
-	if (~counter[8] && &counter[7:0])
+	if (counter == 9'b011111111)
 	begin
 		//Saving previous button every 4 iterations
 		if (&col)
@@ -120,6 +122,7 @@ begin
 end
 
 //Evaluating state change
-assign value = (counter == 0 && col == 2'b11 && {prev[5], prev[3:0]} != {cur[5], cur[3:0]}) ? cur : BTN_EMPTY;
+//Comparing current and previous states without keyboard bit
+assign value = (counter == 9'b000000000 && col == 2'b11 && {prev[5], prev[3:0]} != {cur[5], cur[3:0]}) ? cur : BTN_EMPTY;
 
 endmodule

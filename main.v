@@ -111,11 +111,13 @@ display_bcd display(
 	.leds (display_leds)
 );
 
+// Division result
 wire [31:0] res;
 assign res = ((next[31] ? -next : next) / (top[31] ? -top : top));
 
 always @(posedge clock)
 begin
+	//Reseting arithmetic error
 	if (~reset)
 		arithmetic_error <= 0;
 
@@ -128,47 +130,47 @@ begin
 		BTN_1:
 		begin
 			write <= 1;
-			new_value <= top * 10 + 1;
+			new_value <= top * 10 + (top[31] ? -1 : 1);
 		end
 		BTN_2:
 		begin
 			write <= 1;
-			new_value <= top * 10 + 2;
+			new_value <= top * 10 + (top[31] ? -2 : 2);
 		end
 		BTN_3:
 		begin
 			write <= 1;
-			new_value <= top * 10 + 3;
+			new_value <= top * 10 + (top[31] ? -3 : 3);
 		end
 		BTN_4:
 		begin
 			write <= 1;
-			new_value <= top * 10 + 4;
+			new_value <= top * 10 + (top[31] ? -4 : 4);
 		end
 		BTN_5:
 		begin
 			write <= 1;
-			new_value <= top * 10 + 5;
+			new_value <= top * 10 + (top[31] ? -5 : 5);
 		end
 		BTN_6:
 		begin
 			write <= 1;
-			new_value <= top * 10 + 6;
+			new_value <= top * 10 + (top[31] ? -6 : 6);
 		end
 		BTN_7:
 		begin
 			write <= 1;
-			new_value <= top * 10 + 7;
+			new_value <= top * 10 + (top[31] ? -7 : 7);
 		end
 		BTN_8: 
 		begin
 			write <= 1;
-			new_value <= top * 10 + 8;
+			new_value <= top * 10 + (top[31] ? -8 : 8);
 		end
 		BTN_9:
 		begin
 			write <= 1;
-			new_value <= top * 10 + 9;
+			new_value <= top * 10 + (top[31] ? -9 : 9);
 		end
 		BTN_CLEAR_DIGIT:
 		begin

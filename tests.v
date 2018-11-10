@@ -1,11 +1,13 @@
 `timescale 1ps / 1ps
+`define testcase(label) \
+	$display("\nTEST CASE: ", label, "\n");
 `define assert(signal, value) \
 		if (signal !== value) begin \
-			$display("ASSERTION FAILED #", $realtime / 1000000); \
-			$finish; \
+			$display("ASSERTION FAILED"); \
+			$finish(1); \
 		end \
 		else \
-			$display("PASSED #", $realtime / 1000000);
+			$display("PASSED");
 	
 module tests ();
 	parameter D_0 = 8'b00111111;
@@ -83,6 +85,8 @@ module tests ();
 		clock <= !clock;
 	end
 
+	//Emulating numpad
+	//10000 cycles delay
 	always @(*)
 	begin
 		case (cur_btn)
@@ -109,6 +113,8 @@ module tests ();
 		endcase
 	end
 
+	//Emulating looking at display
+	//100000 cycles delay
 	always @(*)
 	begin
 		case (leds_control)
@@ -129,102 +135,94 @@ module tests ();
 	begin
 		$display("TESTS STARTED");
 
-		// #1
-		#1000000
+		`testcase("initial stack and display state")
+		#200000
+		`assert(main.stack.top, 0)
+		`assert(main.stack.count, 1)
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_0})
 		
-		// #2
+		`testcase("show elements count")
 		show_count = 1;
-		#1000000
+		#200000
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_1})
 		
-		// #3
-		//WRITE 1
+		`testcase("write 1")
 		show_count = 0;
 		cur_btn = BTN_1;
-		#1000000
+		#200000
 		`assert(main.stack.top, 1)
 		`assert(main.stack.count, 1)
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_1})
 
-		// #4
-		//WRITE 12
+		`testcase("write 12")
 		cur_btn = BTN_2;
-		#1000000
+		#200000
 		`assert(main.stack.top, 12)
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_1, D_2})
 
-		// #5
-		//WRITE 123
+		`testcase("write 123")
 		cur_btn = BTN_3;
-		#1000000
+		#200000
 		`assert(main.stack.top, 123)
 		`assert(main.stack.count, 1)
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_1, D_2, D_3})
 
-		// #6
-		//SWITCH TO HEX
+		`testcase("show in hexadecimal")
 		cur_btn = BTN_EMPTY;
 		show_in_hex = 1;
-		#1000000
+		#200000
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_7, D_B})
 
-		// #7
-		//PUSH
+		`testcase("push to stack")
 		cur_btn = BTN_B;
 		show_in_hex = 0;
-		#1000000
+		#200000
 		`assert(main.stack.top, 0)
 		`assert(main.stack.next, 123)
 		`assert(main.stack.count, 2)
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_0})
 
-		// #8
-		//WRITE 9
+		`testcase("write 9")
 		cur_btn = BTN_9;
-		#1000000
+		#200000
 		`assert(main.stack.top, 9)
 		`assert(main.stack.next, 123)
 		`assert(main.stack.count, 2)
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_9})
 
-		// #9
-		//WRITE 0
+		`testcase("write 90")
 		cur_btn = BTN_0;
-		#1000000
+		#200000
 		`assert(main.stack.top, 90)
 		`assert(main.stack.next, 123)
 		`assert(main.stack.count, 2)
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_9, D_0})
 
-		// #10
-		//RELEASE BUTTON
+		`testcase("release button")
 		cur_btn = BTN_EMPTY;
-		#1000000
+		#200000
 		`assert(main.stack.top, 90)
 		`assert(main.stack.next, 123)
 		`assert(main.stack.count, 2)
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_9, D_0})
 
-		// #11
-		//WRITE 0
+		`testcase("write 900")
 		cur_btn = BTN_0;
-		#1000000
+		#200000
 		`assert(main.stack.top, 900)
 		`assert(main.stack.next, 123)
 		`assert(main.stack.count, 2)
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_9, D_0, D_0})
 
-		// #12
-		//ADD
+		`testcase("addition")
 		alt_numpad_key = 1;
 		cur_btn = BTN_EMPTY;
-		#100000
+		#20000
 		`assert(alt_numpad_led, 0)
 		`assert(main.numpad.is_alt, 1)
 		alt_numpad_key = 0;
 		cur_btn = BTN_1;
-		#900000
+		#200000
 		`assert(alt_numpad_led, 1)
 		`assert(main.numpad.is_alt, 0)
 		`assert(main.stack.top, 1023)
@@ -232,247 +230,222 @@ module tests ();
 		`assert(main.stack.count, 1)
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_1, D_0, D_2, D_3})
 
-		// #13
-		//SWITCH TO HEX	
+		`testcase("show result in hexadecimal")
 		show_in_hex = 1;
-		#1000000
+		#200000
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_3, D_F, D_F})
 
-		// #14
-		//PUSH
+		`testcase("push to stack")
 		show_in_hex = 0;
 		cur_btn = BTN_B;
-		#1000000
+		#20000
 		`assert(main.stack.top, 0)
 		`assert(main.stack.next, 1023)
 		`assert(main.stack.count, 2)
 
-		// #15
-		//WRITE 8
+		`testcase("write 8")
 		cur_btn = BTN_8;
-		#1000000
+		#20000
 		`assert(main.stack.top, 8)
 		`assert(main.stack.next, 1023)
 		`assert(main.stack.count, 2)
 
-		// #16
-		//SUBTRACT
+		`testcase("subtraction")
 		alt_numpad_key = 1;
 		cur_btn = BTN_2;
-		#1000000
+		#20000
 		`assert(main.stack.top, 1015)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
 		alt_numpad_key = 0;
 
-		// #17
-		//PUSH
+		`testcase("push")
 		cur_btn = BTN_B;
-		#1000000
+		#20000
 		`assert(main.stack.top, 0)
 		`assert(main.stack.next, 1015)
 		`assert(main.stack.count, 2)
 
-		// #18
-		//WRITE 7
+		`testcase("write 7")
 		cur_btn = BTN_7;
-		#1000000
+		#20000
 		`assert(main.stack.top, 7)
 		`assert(main.stack.next, 1015)
 		`assert(main.stack.count, 2)
 
-		// #19
-		//MULTIPLY
+		`testcase("multiplication")
 		alt_numpad_key = 1;
 		cur_btn = BTN_3;
-		#1000000
+		#20000
 		`assert(main.stack.top, 7105)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
 		alt_numpad_key = 0;
 
-		// #20
-		//PUSH
+		`testcase("push 6")
 		cur_btn = BTN_B;
-		#1000000
-		`assert(main.stack.top, 0)
-		`assert(main.stack.next, 7105)
-		`assert(main.stack.count, 2)
-
-		// #21
-		//WRITE 6
+		#20000
 		cur_btn = BTN_6;
-		#1000000
+		#20000
 		`assert(main.stack.top, 6)
 		`assert(main.stack.next, 7105)
 		`assert(main.stack.count, 2)
 
-		// #22
-		//DIVIDE
+		`testcase("division")
 		alt_numpad_key = 1;
 		cur_btn = BTN_A;
-		#1000000
+		#20000
 		`assert(main.stack.top, 1184)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
 		alt_numpad_key = 0;
 
-		// #23
-		//UNARY MINUS
+		`testcase("unary minus")
 		cur_btn = BTN_F;
-		#1000000
+		#200000
 		`assert(main.stack.top, -1184)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
 		`assert(displayed, {D_MINUS, D_EMPTY, D_EMPTY, D_EMPTY, D_1, D_1, D_8, D_4})
 
-		// #24
-		//PUSH
+		`testcase("push -5")
 		cur_btn = BTN_B;
-		#1000000
-		`assert(main.stack.top, 0)
-		`assert(main.stack.next, -1184)
-		`assert(main.stack.count, 2)
-
-		// #25
-		//WRITE 5
+		#20000	
 		cur_btn = BTN_5;
-		#1000000
-		`assert(main.stack.top, 5)
-		`assert(main.stack.next, -1184)
-		`assert(main.stack.count, 2)
-
-		// #26
-		//UNARY MINUS
+		#20000
 		cur_btn = BTN_F;
-		#1000000
+		#200000
 		`assert(main.stack.top, -5)
 		`assert(main.stack.next, -1184)
 		`assert(main.stack.count, 2)
 		`assert(displayed, {D_MINUS, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_5})
 
-		// #27
-		//DIVIDE
+		`testcase("division of two negative with remainder")
 		alt_numpad_key = 1;
 		cur_btn = BTN_A;
-		#1000000
+		#200000
 		`assert(main.stack.top, 236)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_2, D_3, D_6})
 		alt_numpad_key = 0;
 
-		// #28
-		//clear digit
+		`testcase("clear digit")
 		cur_btn = BTN_EMPTY;
-		#100000
+		#20000
 		cur_btn = BTN_A;
-		#900000
+		#200000
 		`assert(main.stack.top, 23)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_2, D_3})
 
-		// #29
-		//clear number
+		`testcase("clear full number")
 		cur_btn = BTN_E;
-		#1000000
+		#200000
 		`assert(main.stack.top, 0)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_0})
 
-		// #30
-		//push 7 and 8
+		`testcase("push 7, push 8")
 		cur_btn = BTN_7;
-		#100000
+		#20000
 		cur_btn = BTN_B;
-		#100000
+		#20000
 		cur_btn = BTN_8;
-		#800000
+		#20000
 		`assert(main.stack.top, 8)
 		`assert(main.stack.next, 7)
 		`assert(main.stack.count, 2)
 
-		// #31
-		//SWAP
+		`testcase("swap")
 		cur_btn = BTN_D;
-		#1000000
+		#20000
 		`assert(main.stack.top, 7)
 		`assert(main.stack.next, 8)
 		`assert(main.stack.count, 2)
 
-		// #32
-		//POP
+		`testcase("pop")
 		cur_btn = BTN_C;
-		#1000000
+		#20000
 		`assert(main.stack.top, 8)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
 
-		// #33
-		// INC, DEC, SQR, CUBE
+		`testcase("increment, decrement, square, cube")
 		alt_numpad_key = 1;
 		cur_btn = BTN_6;
-		#100000
+		#20000
 		`assert(main.stack.top, 9)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
 		alt_numpad_key = 0;
-		#100000
+		#20000
 
 		alt_numpad_key = 1;
 		cur_btn = BTN_B;
-		#100000
+		#20000
 		`assert(main.stack.top, 8)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
 		alt_numpad_key = 0;
-		#100000
+		#20000
 
 		alt_numpad_key = 1;
 		cur_btn = BTN_4;
-		#100000
+		#20000
 		`assert(main.stack.top, 64)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
 		alt_numpad_key = 0;
-		#100000
+		#20000
 
 		alt_numpad_key = 1;
 		cur_btn = BTN_5;
-		#100000
+		#20000
 		`assert(main.stack.top, 262144)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
 		alt_numpad_key = 0;
-		#300000
+		#20000
 
-		// #34
-		//DIV BY 0
+		`testcase("division by 0, reset")
 		cur_btn = BTN_B;
-		#100000
+		#20000
 		`assert(main.stack.top, 0)
 		`assert(main.stack.next, 262144)
 		`assert(main.stack.count, 2)
-		#100000
+		#20000
 
 		alt_numpad_key = 1;
 		cur_btn = BTN_A;
-		#400000
+		#200000
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_E, D_R, D_R, D_O, D_R})
 		alt_numpad_key = 0;
-		#100000
+		#20000
 
 		reset = 1;
-		#300000
+		#200000
 		reset = 0;
 		`assert(main.stack.top, 0)
 		`assert(main.stack.next, 0)
 		`assert(main.stack.count, 1)
 		`assert(displayed, {D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_0})
 
-		$display("TESTS ENDED");
+		`testcase("write -4, write -44")
+		cur_btn = BTN_4;
+		#20000
+		cur_btn = BTN_F;
+		#20000
+		cur_btn = BTN_4;
+		#200000
+		`assert(main.stack.top, -44)
+		`assert(main.stack.next, 0)
+		`assert(main.stack.count, 1)
+		`assert(displayed, {D_MINUS, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_EMPTY, D_4, D_4})
+
+		$display("\nTESTS ENDED");
 		$stop;
 	end
 
