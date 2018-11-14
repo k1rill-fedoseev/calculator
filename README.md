@@ -1,3 +1,5 @@
-# calculator
+# Stack-based calculator on the Cyclone IV FPGA board
 
-CA project
+This project was done during the Computer Architecture course at Innopolis University by Fedoseev Kirill and Yuloskov Artem.
+
+See this - https://habr.com/post/429888/
